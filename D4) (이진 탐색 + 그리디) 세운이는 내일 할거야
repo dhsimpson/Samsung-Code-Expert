@@ -1,0 +1,45 @@
+#include<iostream>
+#include<string>
+#include<vector>
+#include<queue>
+#include<limits>
+#include<algorithm>
+using namespace std;
+int TC, N, T, D, mDay, res;
+vector<pair<int, int>> works;
+
+void greedy(int minDay,int maxDay) { // 그리디하게 이진탐색 한다
+	if (minDay > maxDay)return;
+	int mid = (minDay + maxDay) / 2;
+	int day = mid;
+	for (int i = 0; i < works.size(); i++) {
+		if (works[i].second + mid <= works[i].first) { mid += works[i].second; }
+		else if(mid-1>res) { // 낮은 day수가 검사할 의미가 있을 때만
+			greedy(minDay, day - 1);
+			return;
+		}
+		else {return;}
+	}
+	if (res < day)res = day;
+	greedy(day + 1, maxDay);
+}
+int main() {
+	ios_base::sync_with_stdio(false);
+	cin.tie(NULL);
+	cout.tie(NULL);
+	cin >> TC;
+	int tempA, tempB;
+	for (int i = 0; i < TC; i++) {
+		works.clear(); mDay = 0; res = 0;
+		cin >> N;
+		for (int j = 0; j < N; j++) {
+			cin >> tempA >> tempB;
+			if (tempB > mDay)mDay = tempB;
+			works.push_back({ tempB,tempA });
+		}
+		sort(works.begin(), works.end());
+		greedy(0, mDay);
+		cout << "#" << i + 1 <<" "<< res <<"\n";
+	}
+	return 0;
+}
