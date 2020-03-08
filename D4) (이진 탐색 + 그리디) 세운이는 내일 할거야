@@ -1,8 +1,5 @@
 #include<iostream>
-#include<string>
 #include<vector>
-#include<queue>
-#include<limits>
 #include<algorithm>
 using namespace std;
 int TC, N, T, D, mDay, res;
