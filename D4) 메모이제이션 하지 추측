@@ -1,0 +1,36 @@
+#include<iostream>
+#include<vector>
+using namespace std;
+int T;
+unsigned long N;
+unsigned long temp = 0;
+vector<unsigned long> check;
+int main() {
+	ios_base::sync_with_stdio(false);
+	cin.tie(NULL);
+	cout.tie(NULL);
+	cin >> T;
+	bool finished = true;
+	for (int i = 0; i < T; i++) {
+		cin >> N;
+		temp = N;
+		check.clear();
+		check.push_back(N);
+		finished = true;
+		while (N > 1) {
+			if (N % 2 == 0)N /= 2;
+			else N = 3 * N + 3;
+			for (int i = 0; i < check.size(); i++) {
+				if (check[i] == N) {
+					finished = false;
+					break;
+				}
+			}
+			if (!finished)break;
+			else check.push_back(N);
+		}
+		if (finished) cout << "#" << i + 1 << " YES\n";
+		else cout << "#" << i + 1 << " NO\n";
+	}
+	return 0;
+}
