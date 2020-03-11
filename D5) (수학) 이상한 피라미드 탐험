@@ -1,0 +1,54 @@
+#include<iostream>
+#include<vector>
+#define MAX 20001
+using namespace std;
+int T, a, b;
+vector<int> layer;
+int searchRoom(int a, int b) {
+	if (a > b) { // 무조건 위에서 아래로 탐색하도록(코드가 짧아짐) 민지가 아래에 있다면 보물과 민지의 위치를 바꾼다.
+		int temp = a; a = b; b = temp;
+	}
+	int gap = layer[b] - layer[a];
+	int leftA = a;
+	// 좌측 끝 찾기
+	while (layer[leftA]!=layer[b]) {
+		leftA += layer[leftA];
+	}
+	// 우측 끝 찾기
+	int rightA = a;
+	while (layer[rightA] != layer[b]) {
+		rightA += layer[rightA] + 1;
+	}
+	if (leftA <= b && b <= rightA) {
+		return gap;
+	}
+	else if (b < leftA) {
+		return gap + (leftA - b);
+	}
+	else if (rightA < b) {
+		return gap + (b - rightA);
+	}
+}
+void makeLayer() {
+	layer.push_back(0); // 방 번호, 층 번호
+	int l = 1;
+	int n = 0;
+	int cnt = 0;
+	while (n < MAX) {
+		++cnt;
+		++n;
+		layer.push_back(l);
+		if (cnt == l) { cnt = 0; ++l; }
+	}
+}
+int main() {
+	ios_base::sync_with_stdio(false);
+	cin.tie(NULL); cout.tie(NULL);
+	makeLayer();
+	cin >> T;
+	for (int i = 1; i <= T; i++) {
+		cin >> a >> b;
+		cout << "#" << i << " " << searchRoom(a, b) << "\n";
+	}
+	return 0;
+}
