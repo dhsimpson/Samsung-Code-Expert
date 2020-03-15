@@ -1,0 +1,64 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#include<string>
+using namespace std;
+#define MAX 51
+struct cmd {
+	int t, a, b;
+};
+int T, M, N;
+vector<cmd> cmds;
+long tempPoly[MAX];
+
+void Plus(int a,int b,int idx,int num) {
+	tempPoly[idx] =( tempPoly[a] + tempPoly[b])%998244353;
+}
+void Ccross(int a, int b, int idx, int num) {
+	tempPoly[idx] = (a * tempPoly[b])%998244353;
+}
+void Xcross(int a, int b, int idx, int num) {
+	tempPoly[idx] = (tempPoly[a] * tempPoly[b])%998244353;
+}
+long resPoly(int num) {
+	tempPoly[0] = 1;
+	tempPoly[1] = num;
+	int idx = 2;
+	for (int i = 0; i < cmds.size(); i++) {
+		if (cmds[i].t == 1) {
+			Plus(cmds[i].a, cmds[i].b, idx,num);
+		}
+		else if (cmds[i].t == 2) {
+			Ccross(cmds[i].a, cmds[i].b, idx, num);
+		}
+		else if (cmds[i].t == 3) {
+			Xcross(cmds[i].a, cmds[i].b, idx, num);
+		}
+		++idx;
+	}
+	return tempPoly[N];
+}
+int main() {
+	ios_base::sync_with_stdio(false);
+	cin.tie(NULL);cout.tie(NULL);
+	cin >> T;
+	for (int i = 1; i <= T; i++) {
+		cin >> N;
+        cmds.clear();
+		for (int j = 2; j <= N; j++) {
+			cmd temp;
+			cin >> temp.t >> temp.a >> temp.b;
+			cmds.push_back(temp);
+		}
+		cin >> M;
+		cout << "#" << i << " ";
+		for (int j = 1; j <= M; j++) {
+			int temp;
+			fill(tempPoly, tempPoly + MAX, 0);
+			cin >> temp;
+			cout << resPoly(temp) << " ";
+		}
+		cout << "\n";
+	}
+	return 0;
+}
