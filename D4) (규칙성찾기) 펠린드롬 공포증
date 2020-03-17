@@ -1,0 +1,49 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+#include<algorithm>
+using namespace std;
+int T;
+int numA, numB, numC;
+string in;
+bool Pelindrome() {
+	if (abs(numA - numB) >= 2) {
+		return false;
+	}
+	if (abs(numB - numC) >= 2) {
+		return false;
+	}
+	if (abs(numC - numA) >= 2) {
+		return false;
+	}
+	return true;
+}
+int main() {
+	ios_base::sync_with_stdio(false);
+	cin.tie(NULL); cout.tie(NULL);
+	cin >> T;
+	for (int i = 1; i <= T; i++) {
+		cin >> in;
+		numA = numB = numC = 0;
+		for (int j = 0; j < in.length(); j++) {
+			if (in[j] == 'a') {
+				++numA;
+			}
+			else if (in[j] == 'b') {
+				++numB;
+			}
+			else if (in[j] == 'c') {
+				++numC;
+			}
+		}
+		cout << "#" << i;
+		if (Pelindrome()) {
+			cout << " YES\n";
+		}
+		else {
+			cout << " NO\n";
+		}
+
+	}
+	return 0;
+}
