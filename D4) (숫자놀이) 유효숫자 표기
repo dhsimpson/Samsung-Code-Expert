@@ -1,0 +1,43 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+#include<algorithm>
+#include<string>
+using namespace std;
+int T;
+string N;
+long nums;
+long res1,res2;
+long exes;
+void numbering() {
+	exes = N.length() - 1;
+	string t = N.substr(0, 3);
+	string sub = N.substr(2, 1);
+	nums = atoi(t.c_str());
+	if (atoi(sub.c_str()) >= 5) {
+		nums += 10;
+	}
+	nums -= nums % 10;
+	nums /= 10;
+	while (nums >= 100) {
+		++exes;
+		nums /= 10;
+	}
+	res1 = nums / 10;
+	res2 = nums % 10;
+}
+int main() {
+	ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
+	cin >> T;
+	for (int i = 1; i <= T; i++) {
+		cin >> N;
+		nums = 0.0; exes = 0;
+		numbering();
+		cout << "#" << i <<" " <<res1<<"."<<res2 << "*10^" << exes << "\n";
+	}
+	//string n;
+	//cin >> n;
+	//int stoi = atoi(n.c_str());
+	//cout << stoi;
+	return 0;
+}
