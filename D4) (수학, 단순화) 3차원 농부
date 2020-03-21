@@ -1,0 +1,112 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+#include<algorithm>
+using namespace std;
+int TC;
+long N, M, c1, c2, z;
+long dis;
+int pairs;
+vector<long> cow;
+vector<long> horse;
+vector<pair<char, long>> map;
+void getDis() {
+	long ptrC, ptrH;
+	ptrC = 0; ptrH =0;
+	while (true) {
+		if (ptrC<N && cow[ptrC] <= horse[ptrH]) {
+			map.push_back({ 'c',cow[ptrC++] });
+			if (ptrC == N) {
+				for (int i = ptrH; i < M; i++) {
+					map.push_back({ 'h',horse[ptrH++] });
+				}
+				return;
+			}
+		}
+		else {
+			map.push_back({ 'h',horse[ptrH++] });
+			if (ptrH == M) {
+				for (int i = ptrC; i < N; i++) {
+					map.push_back({ 'c',cow[ptrC++] });
+				}
+				return;
+			}
+		}
+	}
+}
+void getPairs() {
+	pair<char, int> now = { 'o',-1 };
+	for (int i = 0; i < map.size(); i++) {
+		if (now.first == 'o') {
+			now.first = map[i].first;
+			now.second = i;
+			continue;
+		}
+		else {
+			if (now.first == map[i].first) { 
+				now.second = i;
+				continue;
+			}
+			else {
+				if (dis == -1) {
+					dis = map[i].second - map[now.second].second;
+					now.first = map[i].first;
+					now.second = i;
+				}
+				else {
+					dis = min(dis,map[i].second - map[now.second].second);
+					now.first = map[i].first;
+					now.second = i;
+				}
+			}
+		}
+	}
+	// 이제 dis가 구해졌음
+	now = { 'o',-1 };
+	for (int i = 0; i < map.size(); i++) {
+		if (now.first == 'o') {
+			now.first = map[i].first;
+			now.second = i;
+			continue;
+		}
+		else {
+			if (now.first == map[i].first) {
+				now.second = i;
+				continue;
+			}
+			else {
+				if (map[i].second - map[now.second].second == dis) {
+					++pairs;
+				}
+				now.first = map[i].first;
+				now.second = i;
+			}
+		}
+	}
+}
+int main() {
+	ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
+	cin >> TC;
+	long temp;
+	for (int i = 1; i <= TC; i++) {
+		cin >> N >> M;
+		cin >> c1 >> c2;
+		cow.clear(); horse.clear(); map.clear();
+		dis = -1;
+		pairs = 0;
+		for (int j = 1; j <= N; j++) {
+			cin >> temp;
+			cow.push_back(temp);
+		}
+		sort(cow.begin(), cow.end());
+		for (int j = 1; j <= M; j++) {
+			cin >> temp;
+			horse.push_back(temp);
+		}
+		sort(horse.begin(), horse.end());
+		getDis();
+		getPairs();
+		cout << "#" << i << " " << dis+abs(c1-c2) << " " << pairs << "\n";
+	}
+	return 0;
+}
