@@ -1,0 +1,58 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+int TC, N, T, P;
+int Tests[2001];
+int People[2001];
+int Score[2001];
+vector<char> isCorrect[2001];
+int resOrder, resScore;
+void getOrder() {
+	int jiHakScore = 0;
+	int moreScore = 0; // 점수 더많은애들
+	int moreTests = 0; // 동점이지만 문제 더많이 푼애들
+	int moreNumbers = 0; // 동점이고 문제수 같지만 앞번호인 애들
+	for (int i = 1; i <= N; i++) {
+		for (int j = 1; j <= T; j++) {
+			if (isCorrect[i][j - 1] == '1')Score[i] += Tests[j];
+		}
+	}
+	jiHakScore = Score[P];
+	for (int i = 1; i <= N; i++) {
+		if (Score[i] > jiHakScore) {
+			++moreScore;
+		}
+		else if (i != P && Score[i] == jiHakScore) {
+			if (People[i] > People[P]) { ++moreTests; }
+			else if (People[i] == People[P] && i < P) { ++moreNumbers; }
+		}
+	}
+	resScore = jiHakScore;
+	resOrder = moreScore + moreTests + moreNumbers + 1;
+}
+int main() {
+	scanf("%d", &TC);
+	char temp;
+	for (int i = 1; i <= TC; i++) {
+		scanf("%d%d%d", &N, &T, &P);
+		fill(Tests, Tests + 2001, N); // 처음에는 참가자수 만큼의 점수임
+		fill(People, People + 2001, 0);
+		fill(Score, Score + 2001, 0);
+		for (int i = 0; i < 2001; i++) isCorrect[i].clear();
+		for (int j = 1; j <= N; j++) {
+			for (int k = 1; k <= T; k++) {
+				temp = getchar();
+				if (temp == ' ' || temp == '\n') temp = getchar();
+				if (temp == '1') {
+					--Tests[k]; // 맞추면 점수가 줄어듦
+					++People[j]; // 해당 학생이 맞춘 문제수가 증가
+				}
+				isCorrect[j].push_back(temp);
+			}
+		}
+		getOrder();
+		cout << "#" << i << " " << resScore << " " << resOrder << "\n"; // 석차구하기
+	}
+	return 0;
+}
