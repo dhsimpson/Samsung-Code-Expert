@@ -1,0 +1,11 @@
+#include<iostream>
+using namespace std;
+unsigned long TC, L;
+int main() {
+	scanf("%d", &TC);
+	for (int i = 1; i <= TC; i++) {
+		scanf("%d", &L);
+		L -= 2;
+		printf("#%d %ld\n", i, (L+1)*(L+1)/4);
+	}
+}
