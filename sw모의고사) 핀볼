@@ -1,0 +1,131 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+#define MAX 101
+using namespace std;
+int map[MAX][MAX];
+vector<pair<int,int>> holl[11];
+
+int play(int y,int x,int dir,int n){
+    int s_y = y;
+    int s_x = x;
+    int cnt = 0;
+    // 방향은 상우하좌
+    int yd[] = {-1,0,1,0};
+    int xd[] = {0,1,0,-1};
+    bool started = false;
+    while(true){
+        if (map[y][x]==-1 || (started && y==s_y && x==s_x) ) {
+            return cnt;
+        }
+        started = true;
+        
+        // 이동한 칸이 벽이면 예외처리
+        if(0>y||y>=n||0>x||x>=n){
+            dir = (dir+2)%4; // 방향 전환
+    		y+=yd[dir];
+   	 		x+=xd[dir];
+            cnt++;
+        	continue;
+        }
+        
+        // 이동한 칸이 빈 칸이면 한 칸 이동
+        if(map[y][x]==0){
+    		y+=yd[dir];
+   	 		x+=xd[dir];
+        }
+        // 이동한 칸이 삼각 블록이면 블록 방향에 맞게 방향 전환
+        else if(1<=map[y][x]&&map[y][x]<=4){
+            cnt++;
+            if(map[y][x]==dir || map[y][x]-dir==1 || map[y][x]==dir+4){
+                dir = (dir+2)%4;
+            }else {
+            	if(map[y][x]==1){
+                	if(dir==2) dir=1;
+                    else dir=0;
+                }
+                else if(map[y][x]==2){
+                	if(dir==3) dir=2;
+                    else dir=1;
+                }
+                else if(map[y][x]==3){
+                	if(dir==0) dir=3;
+                    else dir=2;
+                }
+                else if(map[y][x]==4){
+                	if(dir==1) dir=0;
+                    else dir=3;
+                }
+            }
+            
+    		y+=yd[dir];
+   	 		x+=xd[dir];
+        }
+        // 이동한 칸이 사각 블록이면 방향 전환
+        else if(map[y][x]==5){
+            dir = (dir+2)%4;
+            cnt++;
+    		y+=yd[dir];
+   	 		x+=xd[dir];
+        }
+        // 이동한 칸이 웜홀이면 다른 웜홀로 이동
+        else if(map[y][x]>=6){
+            int h = map[y][x];
+            if(holl[h][0].first==y && holl[h][0].second==x){
+            	y = holl[h][1].first;
+                x = holl[h][1].second;
+            }else{
+            	y = holl[h][0].first;
+                x = holl[h][0].second;
+            }
+    		y+=yd[dir];
+   	 		x+=xd[dir];
+        }
+    }
+    return cnt;
+}
+
+void refresh(){
+	for(int i=0;i<MAX;i++){
+    	for(int j=0;j<MAX;j++){
+            map[i][j]=0;
+        }
+    }
+    for(int i=0;i<11;i++){
+    	holl[i].clear();
+    }
+}
+int main(int argc, char** argv)
+{
+	int test_case;
+	int T;
+	scanf("%d",&T);
+    for(test_case = 1; test_case <= T; ++test_case)
+	{
+        int n;
+        scanf("%d",&n);
+        refresh();
+        for(int i=0;i<n;i++){
+            for(int j=0;j<n;j++){
+            	scanf("%d",&map[i][j]);
+                if(map[i][j]>=6){
+                	holl[map[i][j]].push_back({i,j});
+                }
+            }
+        }
+        
+        // 실행부
+        int res = 0;
+        for(int i=1; i<n; i++){
+            for(int j=0; j<n; j++){
+                if(map[i][j]==0){
+                	for(int d=0;d<4;d++){
+                        res = max(res,play(i,j,d,n));
+                	}
+                }
+            }
+        }
+        printf("#%d %d\n",test_case,res);
+    }
+	return 0;
+}
