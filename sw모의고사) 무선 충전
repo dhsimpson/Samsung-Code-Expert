@@ -1,0 +1,171 @@
+#include<vector>
+#include<algorithm>
+#include<map>
+#define MAX 11
+using namespace std;
+// map의 각 위치에는 충전 범위가 겹치는 단말들의 vector 번호를 저장
+vector<int> b_map[MAX][MAX];
+// A와 B의 위치 구조체
+struct point {
+	int x, y;
+	point(int _x, int _y) { x = _x; y = _y; }
+};
+// 배터리 충전 단말
+struct Battery {
+	int x, y, c, p;
+	Battery(int _x, int _y, int _c, int _p) { x = _x; y = _y; c = _c; p = _p; }
+};
+// test case 마다 map을 초기화
+void refresh() {
+	for (int i = 0; i < MAX; i++) {
+		for (int j = 0; j < MAX; j++) {
+			b_map[i][j].clear();
+		}
+	}
+}
+// 택시거리 계산
+bool calc_taxi(int x_m, int y_m, int x_b, int y_b, int c) {
+	if (abs(x_m - x_b) + abs(y_m - y_b) <= c) return true;
+	else return false;
+}
+void set_map(vector< Battery> AP) {
+	// 모든 좌표에 해당 좌표에 충전 가능한 AP의 번호를 모두 저장
+	for (int i = 0; i < MAX; i++) {
+		for (int j = 0; j < MAX; j++) {
+			// AP의 모든 택시거리를 계산해 i,j ~ x,y 거리가 c이하이면 idx를 추가
+			for (int idx = 0; idx < AP.size(); idx++) {
+				if (calc_taxi(i, j, AP[idx].x, AP[idx].y,AP[idx].c)) {
+					b_map[i][j].push_back(idx);
+				}
+			}
+		}
+	}
+}
+int charge(point pos_A, point pos_B, vector< Battery> AP) {
+	// A,B와 map 정보를 이용해 최적값을 계산
+	// ex b_idx = map[i][j][idx] => AP[b_idx].p
+
+	// pos_A 에서 b_idx 들과 pos_B 에서 b_idx 들을 비교
+	// 1. 겹치는 AP가(set으로 찾을 수 있다.) 있을 때, A,B가 같은 b_idx의 충전력을 공유한다면?
+	// 2. 겹치건 안 겹치건 간에 A, B의 각 위치에서의 최고 충전력을 이용한다면?
+
+	// A와 B가 같은 위치
+	// 위치-충전량 쌍
+	map<int,int> A,B; 
+	for (int i = 0; i < b_map[pos_A.y][pos_A.x].size(); i++) A.insert({ b_map[pos_A.y][pos_A.x][i] ,AP[b_map[pos_A.y][pos_A.x][i]].p});
+	for (int i = 0; i < b_map[pos_B.y][pos_B.x].size(); i++) B.insert({ b_map[pos_B.y][pos_B.x][i], AP[b_map[pos_B.y][pos_B.x][i]].p });
+
+	// A와 B의 충전단말 번호
+	int b_A = -1;int b_B=-1;
+	int temp_A = 0;
+	for (auto it = A.begin(); it != A.end(); it++) {
+		if (temp_A < it->second) {
+			// 최고 충전량과 그 위치를 저장
+			temp_A = it->second; b_A = it->first;
+		}
+	}
+	int temp_B = 0;
+	for (auto it = B.begin(); it != B.end(); it++) {
+		if (temp_B < it->second) {
+			// 최고 충전량과 그 위치를 저장
+			temp_B = it->second; b_B = it->first;
+		}
+	}
+	// 두 배터리가 다른 배터리라면 그대로 반환
+	if (b_A != b_B) {
+		int res = 0;
+		if (b_A != -1) {
+			res += AP[b_A].p;
+		}
+		if (b_B != -1) {
+			res += AP[b_B].p;
+		}
+
+		return res;
+	}
+	// A,B 위치 둘 다 아무것도 없다면 0을 리턴
+	if (b_A == -1) return 0;
+    
+    // A와 B의 same 이외의 최대값 배터리 단말을 찾음
+	int same = b_A;
+	int same_p = AP[b_A].p;
+	// A의 다른 충전단말 중 가장 큰 것을 찾아봄
+	temp_A = 0;
+	for (auto it = A.begin(); it != A.end(); it++) {
+		if (temp_A < it->second) {
+			// 최고 충전량과 그 위치를 저장
+			if(it->first !=same) temp_A = it->second; b_A = it->first;
+		}
+	}
+	// B의 다른 충전단말 중 가장 큰 것을 찾아봄
+	temp_B = 0;
+	for (auto it = B.begin(); it != B.end(); it++) {
+		if (temp_B < it->second) {
+			// 최고 충전량과 그 위치를 저장
+			if (it->first != same) temp_B = it->second; b_B = it->first;
+		}
+	}
+	// 후보 3개
+	// 1. same_p (같은걸 둘이 썼을 때)
+	// 2. same_p + temp_A(A가 다른거 썼을 때, 만약 다른게 없다면 0값을 가짐)
+	// 3. smae_p + temp_B(B의 경우)
+	int res = same_p;
+	res = max(res, same_p+temp_A);
+	res = max(res, same_p+temp_B);
+
+	// 만약 A B 둘다 same 이외 다른 단말이 없다면 same_p 값 리턴
+	// 아니라면 temp_A와 temp_B중 더 큰 값과 same_p를 더한 것을 리턴
+	return res;
+}
+int main() {
+	int T, tick, BC, temp;
+	int xd[] = { 0,0,1,0,-1 };
+	int yd[] = { 0,-1,0,1,0 };
+	scanf("%d", &T);
+	for (int i = 1; i <= T; i++) {
+		// A는 1,1에서 , B는 10,10 에서 출발
+		point pos_A = point(1, 1);
+		point pos_B = point(10, 10);
+		// A와 B의 이동방향
+		vector<int> A; vector<int> B;
+		scanf("%d%d", &tick, &BC);
+		// A 이동방향 입력
+		for (int t = 0; t < tick; t++) {
+			scanf("%d", &temp);
+			A.push_back(temp);
+		}
+		// B 이동방향 입력
+		for (int t = 0; t < tick; t++) {
+			scanf("%d", &temp);
+			B.push_back(temp);
+		}
+		vector< Battery> AP;
+		refresh();
+		// BC 의 정보 입력
+		for (int bc = 0; bc < BC; bc++) {
+			Battery battery = Battery(0,0,0,0);
+			scanf("%d%d%d%d", &battery.y, &battery.x, &battery.c, &battery.p);
+			AP.push_back(battery);
+		}
+		// map에 충전단말 정보를 입력
+		set_map(AP);
+
+		// tick 만큼 이동시키면서 배터리 충전시키기, 단 배터리 충전은 처음도 포함
+		int res = 0;
+        int res_temp = 0;
+		for (int i = 0; i <= tick; i++) {
+			res_temp = charge(pos_A, pos_B, AP);
+            res+=res_temp;
+            //printf("%d 번쨰 : %d\n",i,res_temp);
+			// 이동
+			if (i != tick) {
+				pos_A.x += xd[A[i]]; pos_A.y += yd[A[i]];
+				pos_B.x += xd[B[i]]; pos_B.y += yd[B[i]];
+			}
+
+		}
+		// 정답 출력
+		printf("#%d %d\n", i, res);
+	}
+	return 0;
+}
