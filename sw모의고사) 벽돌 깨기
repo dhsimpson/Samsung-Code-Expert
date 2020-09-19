@@ -1,0 +1,151 @@
+#include <iostream>
+#include<vector>
+#include<algorithm>
+#include<queue>
+#define INF 987654321
+using namespace std;
+struct point {
+	int y, x;
+	point(int _y, int _x) { y = _y; x = _x; }
+};
+int T, N, W, H, res;
+// permutation돌려주는 놈
+vector<int> nums;
+// 게임 map
+vector<vector<int>> map(15, vector<int>(12, 0));
+vector<vector<int>> t_map(15, vector<int>(12, 0));
+
+void init() {
+	nums.clear();
+	for (int i = 0; i < 15; i++) {
+		for (int j = 0; j < 12; j++) {
+			map[i][j] = 0;
+		}
+	}
+	//for (int i = 0; i < map.size(); i++) map[i].clear();
+	N = W = H = 0;
+	res = INF;
+}
+void set_data() {
+	scanf("%d%d%d", &N, &W, &H);
+	for (int i = 0; i < H; i++) {
+		for (int j = 0; j < W; j++) {
+			scanf("%d", &map[i][j]);
+			t_map[i][j] = map[i][j];
+		}
+	}
+}
+// 구슬 던질 때마다 bfs 돌려줌
+void bfs(int idx) {
+	// idx 위치의 위에서 몇 번째에 부딪힐 블록이 있는지 확인 
+	int y_idx = 0;
+	for (int i = 0; i < H; i++) {
+		if (map[i][idx] != 0) {
+			y_idx = i;
+			break;
+		}
+	}
+	// bfs를 위한 큐
+	queue<point> q;
+	q.push(point(y_idx,idx));
+	while (!q.empty()) {
+		int y = q.front().y;
+		int x = q.front().x;
+		int score = map[y][x];
+		map[y][x] = 0;
+		q.pop();
+		// 상하좌우로 퍼져나감
+		//상
+		for (int i = 1; i < score; i++) {
+			if (y - i >= 0 && map[y - i][x] != 0) {
+				q.push(point(y - i, x));
+			}
+		}
+		//하
+		for (int i = 1; i < score; i++) {
+			if (y + i < H && map[y + i][x] != 0) {
+				q.push(point(y + i, x));
+			}
+		}
+		//좌
+		for (int i = 1; i < score; i++) {
+			if (x - i >= 0 && map[y][x - i] != 0) {
+				q.push(point(y, x - i));
+			}
+		}
+		//우
+		for (int i = 1; i < score; i++) {
+			if (x + i < W && map[y][x + i] != 0) {
+				q.push(point(y, x + i));
+			}
+		}
+	}
+}
+void stacking() {
+	for (int j = 0; j < W; j++) {
+		// 열 마다 v에 남은 블록들 다 저장해놓기
+		vector<int> v;
+		for (int i = H - 1; i >= 0; i--) if (map[i][j] != 0) { v.push_back(map[i][j]); map[i][j] = 0; }
+		// j열을 다시 쌓아주기
+		for (int i = 0; i < v.size(); i++) map[H - 1 - i][j] = v[i];
+	}
+}
+void play() {
+	// nums 배열을 이용해 bfs 돌려줌
+	for (int i = 0; i < nums.size(); i++) {
+		bfs(nums[i]);
+		// 한 번 bfs 끝났다면 블록들을 아래로 정렬 해줌
+		// stacking
+		stacking();
+	}
+}
+// 한 번의 게임이 끝나면 map을 refresh 해줌
+void refresh() {
+	for (int i = 0; i < map.size(); i++) {
+		for (int j = 0; j < map[i].size(); j++) {
+			map[i][j] = t_map[i][j];
+		}
+	}
+}
+int cnt() {
+	int blocks = 0;
+	for (int i = 0; i < H; i++) {
+		for (int j = 0; j < W; j++) {
+			if (map[i][j] != 0)blocks++;
+		}
+	}
+	return blocks;
+}
+void backT(int depth) {
+	// 전부 다 골랐다면
+	if (depth == N - 1) {
+		refresh();
+		play();
+		res = min(res, cnt());
+		return;
+	}
+	// 아직 다 안골랐다면
+	for (int t = 0; t < W; t++) {
+		nums.push_back(t);
+		backT(depth + 1);
+		if (res == 0)return;
+		nums.pop_back();
+	}
+}
+int main() {	
+	scanf("%d", &T);
+	for (int i = 1; i <= T; i++) {
+		init();
+		set_data();
+
+		for (int t = 0; t < W; t++) {
+			nums.push_back(t);
+			backT(0);
+			if (res == 0)break;
+			nums.pop_back();
+		}
+		
+		printf("#%d %d\n", i, res);
+	}
+	return 0;
+}
