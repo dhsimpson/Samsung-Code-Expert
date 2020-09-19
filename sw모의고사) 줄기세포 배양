@@ -1,0 +1,89 @@
+#include <iostream>
+#include<vector>
+#include<algorithm>
+#include<queue>
+#define MAX 351
+
+// 줄기세포 정보
+struct cell {
+	int y, x, hp, time;
+};
+
+using namespace std;
+int T, N, M, K;
+vector<vector<int>> map(MAX, vector<int>(MAX, 0));
+vector<vector<bool>> check(MAX, vector<bool>(MAX, false));
+queue<cell> q;
+// 좌표->cell수명
+void init() {
+	scanf("%d%d%d", &N, &M, &K);
+	for (int i = 0; i < map.size(); i++) {
+		for (int j = 0; j < map[i].size(); j++) {
+			map[i][j] = 0;
+			check[i][j] = false;
+		}
+	}
+	while (!q.empty())q.pop();
+}
+void set_cells() {
+	int temp = 0;
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < M; j++) {
+			scanf("%d", &temp);
+			if (temp > 0) {
+				map[150 + i][150 + j] = temp;
+				check[150 + i][150 + j] = true;
+				if (temp != 0) { q.push({ 150+i,150+j,temp,0 }); }
+			}
+		}
+	}
+}
+void time_stamp() {
+	int y[] = { -1,1,0,0 };
+	int x[] = { 0,0,-1,1 };
+
+	for (int i = 0; i < K; i++) {
+		queue<cell> temp;
+		queue<pair<int, int>> m_q;
+		// 한 시간
+		while (!q.empty()) {
+			cell c = q.front(); q.pop();
+
+			// 번식
+			if (c.hp == c.time) {
+				for (int d = 0; d < 4; d++) {
+					int y_t = c.y + y[d];
+					int x_t = c.x + x[d];
+					if (!check[y_t][x_t]) {
+						if (map[y_t][x_t] == 0)m_q.push({ y_t,x_t });
+						map[y_t][x_t] = max(map[y_t][x_t], c.hp);
+					}
+				}
+			}
+			c.time++;
+			if (c.hp * 2 > c.time) temp.push(c);
+		}
+		// 안죽은 애들을 q에 저장
+		q = temp;
+		// 새로 번식된 애들을 q에 추가
+		while (!m_q.empty()) {
+			int y_t = m_q.front().first;
+			int x_t = m_q.front().second;
+			q.push({ y_t,x_t,map[y_t][x_t],0 });
+			m_q.pop();
+			check[y_t][x_t] = true;
+		}
+	}
+}
+int count() {return q.size();}
+int main() {
+	scanf("%d", &T);
+	for (int i = 1; i <= T; i++) {
+		init();
+		set_cells();
+		time_stamp();
+		int res = count();
+		printf("#%d %d\n", i, res);
+	}
+	return 0;
+}
