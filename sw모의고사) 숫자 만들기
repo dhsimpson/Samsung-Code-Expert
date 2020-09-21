@@ -1,0 +1,86 @@
+#include <iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+int T, res, N;
+int res_min = 987654321;
+int res_max = -987654321;
+int temp_res = 0;
+vector<int> nums;
+vector<int> opers; // c.f.) 0 1 2 3 순으로 + - * / 임
+vector<bool> oper_check;
+vector<vector<bool>> visited;
+
+// 초기화 함수
+void init() {
+	res = 0; res_min = 987654321; res_max = -987654321;
+	nums.clear(); opers.clear(); oper_check.clear(); visited.clear();
+}
+// 데이터 셋팅 함수
+void set_data() {
+	scanf("%d", &N);
+	int temp = 0;
+	for (int i = 0; i < 4; i++) {
+		scanf("%d", &temp);
+		for (int j = 0; j < temp; j++) { opers.push_back(i); oper_check.push_back(false); }
+	}
+	for (int i = 0; i < N; i++) {
+		scanf("%d", &temp);
+		nums.push_back(temp);
+		visited.push_back(vector<bool>(4, false));
+	}
+}
+// 연산자에 맞춰 사칙연산 해주는 함수
+int operate(int num1, int num2, int op) {
+	if (op == 0) return num1 + num2;
+	else if (op == 1)return num1 - num2;
+	else if (op == 2)return num1 * num2;
+	else return num1 / num2;
+}
+// 백트래킹 함수
+void backT(int depth) {
+	// 연산자 전부 선택 했다면
+	if (depth == N - 2) {
+		// N-1개의 연산자를 모두 선택했다면
+		// 최대 최솟값을 업데이트 한다.
+		if (temp_res < res_min) res_min = temp_res;
+		if (temp_res > res_max)res_max = temp_res;
+		//printf("%d\n", abs(res_min - res_max));
+		return;
+	}
+	// 다음 연산자 선택하기
+	int temp = temp_res;
+	for (int idx = 0; idx < opers.size(); idx++) {
+		if (!oper_check[idx] && !visited[depth + 1][opers[idx]]) {
+			visited[depth + 1][opers[idx]] = true;
+			oper_check[idx] = true;
+			temp_res = operate(temp_res, nums[depth + 2], opers[idx]);
+			backT(depth+1);
+			oper_check[idx] = false;
+			temp_res = temp;
+		}
+	}
+	for (int i = 0; i < 4; i++)visited[depth + 1][i] = false;
+}
+
+int main() {
+	scanf("%d", &T);
+	for (int i = 1; i <= T; i++) {
+		init();
+		set_data();
+		int temp = nums[0];
+		for (int idx = 0; idx < opers.size(); idx++) {
+			if (!visited[0][opers[idx]]) {
+				visited[0][opers[idx]] = true;
+				oper_check[idx] = true;
+				temp_res = operate(temp, nums[1], opers[idx]); // 연산 시켜준다.
+				backT(0);
+				oper_check[idx] = false;
+				temp_res = temp; // 연산 전의 상태로 되돌린다.
+			}
+		}
+		printf("#%d %d\n", i, abs(res_max-res_min));
+	}
+	return 0;
+}
