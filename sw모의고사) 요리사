@@ -1,0 +1,77 @@
+#include <iostream>
+#include<vector>
+#include<algorithm>
+#define INF 987654321
+using namespace std;
+
+int T,N,res,res_A,res_B;
+vector<vector<int>> map;
+vector<bool> check;
+vector<int> A;
+vector<int> B;
+
+void init() {
+	N = 0;
+	res = INF;
+	map.clear();
+	check.clear();
+}
+void setting() {
+	int temp = 0;
+	scanf("%d", &N);
+	
+	for (int i = 0; i < N; i++) {
+		check.push_back(false);
+		map.push_back(vector<int>());
+		for (int j = 0; j < N; j++) {
+			scanf("%d", &temp);
+			map[i].push_back(temp);
+		}
+	}
+}
+void sinergy() {
+	// 초기화
+	res_A = res_B = 0;
+	for (int i = 0; i < A.size(); i++) {
+		for (int j = 0; j < A.size(); j++) {
+			if (A[i] != A[j]) {res_A += map[A[i]][A[j]];}
+		}
+	}
+	for (int i = 0; i < B.size(); i++) {
+		for (int j = 0; j < B.size(); j++) {
+			if (B[i] != B[j]) { res_B += map[B[i]][B[j]]; }
+		}
+	}
+}
+void backT(int i, int depth) {
+	if (depth == N / 2 - 1) {
+		B.clear();
+		for (int j = 0; j < N; j++) {if (!check[j])B.push_back(j);}
+		sinergy();
+		res = min(res, abs(res_A - res_B));
+		return;
+	}
+	for (int idx = i + 1; idx < N; idx++) {
+		A.push_back(idx);
+		check[idx] = true;
+		backT(idx, depth + 1);
+		A.pop_back();
+		check[idx] = false;
+	}
+}
+int main() {
+	scanf("%d", &T);
+	for (int i = 1; i <= T; i++) {
+		init();
+		setting();
+		for (int idx = 0; idx <= N/2; idx++) {
+			A.push_back(idx);
+			check[idx] = true;
+			backT(idx, 0);
+			A.pop_back();
+			check[idx] = false;
+		}
+		printf("#%d %d\n", i,res);
+	}
+	return 0;
+}
