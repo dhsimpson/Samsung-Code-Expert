@@ -1,0 +1,93 @@
+#include <iostream>
+#include<deque>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+int T, K, idx, dir, res; // idx,dir는 돌리는 자석 위치,방향 (1 시계 -1 반시계)
+deque<int> magnets[4];
+vector<pair<int, int>> turning_mag;//회전하는 자석의 idx,dir를 저장
+
+void init() {
+	// 초기화 -> 4개 자석 초기화 및 배열 등을 다 clear 해줌
+	res = 0;
+	for (int i = 0; i < 4; i++)magnets[i].clear();
+	turning_mag.clear();
+}
+void setting() {
+	// 회전 횟수
+	scanf("%d", &K);
+	// 4개 자석을 채워넣음
+	int temp = 0;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 8; j++) {
+			scanf("%d", &temp);
+			magnets[i].push_back(temp);
+		}
+	}
+}
+// 자석 회전
+void turn(int idx, int dir) {
+	int temp = 0;
+	if (dir == 1) {
+		temp = magnets[idx].back(); magnets[idx].pop_back();
+		magnets[idx].push_front(temp);
+	}
+	else {
+		temp = magnets[idx].front(); magnets[idx].pop_front();
+		magnets[idx].push_back(temp);
+	}
+}
+// 왼쪽으로 전파
+void left(int idx,int dir) {
+	for (int i = idx; i >= 1; i--) {
+		if (magnets[i][6] != magnets[i - 1][2]) { // 7이 왼쪽 2가 오른쪽
+			dir *= -1;
+			turning_mag.push_back({ i-1 ,dir });
+		}
+		else break;
+	}
+}
+// 오른쪽으로 전파
+void right(int idx, int dir) {
+	for (int i = idx; i < 3; i++) {
+		if (magnets[i][2] != magnets[i + 1][6]) { // 7이 왼쪽 2가 오른쪽
+			dir *= -1;
+			turning_mag.push_back({ i + 1 ,dir });
+		}
+		else break;
+	}
+}
+void play() {
+	for (int i = 0; i < K; i++) {
+		// 몇 번 자석을 어느 방향으로 회전시킬 지 scanf
+		scanf("%d%d", &idx, &dir);
+		idx -= 1;
+		// idx 번 째는 무조건 돌아가므로
+		turning_mag.clear();
+		turning_mag.push_back({ idx ,dir });
+		// 해당 자석을 기준으로 왼쪽으로 전파
+		left(idx, dir);
+		// 오른쪽으로 전파
+		right(idx, dir);
+		// 회전 시키기
+		for (int j = 0; j < turning_mag.size(); j++) turn(turning_mag[j].first, turning_mag[j].second);
+	}
+}
+void score() {
+	// 각 자석의 맨 위(0번)를 보고 점수 추합
+	for (int i = 0; i < 4; i++) {
+		res += magnets[i][0] * pow(2,i);
+	}
+}
+int main() {
+	scanf("%d", &T);
+	for (int i = 1; i <= T; i++) {
+		init();
+		setting();
+		play();
+		score();
+		printf("#%d %d\n", i,res);
+	}
+	return 0;
+}
