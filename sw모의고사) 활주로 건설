@@ -1,0 +1,89 @@
+#include <iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+int T, N, x, res;
+vector<vector<int>> map(N,vector<int>(N, 0));
+vector<int> temp;
+
+void init() {
+	map.clear();
+	temp.clear();
+	N = x = res = 0;
+}
+void setting() {
+	int t = 0;
+	scanf("%d%d", &N, &x);
+	for (int i = 0; i < N; i++) map.push_back(vector<int>());
+	
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			scanf("%d", &t);
+			map[i].push_back(t);
+		}
+	}
+}
+bool check() {
+	int t = 0;//임의의 높이
+	vector<bool> is_block(N, false);
+	//temp 행에 대해 검사
+	//검사 도중에 통과 못하면 false 반환
+	for (int i = 0; i < N - 1;) {
+		if (temp[i] == temp[i + 1])i++;
+		else if (abs(temp[i] - temp[i + 1]) >= 2)return false;
+		else if (temp[i] > temp[i + 1]) { // 왼쪽이 더높음
+			if (i + x >= N)return false; // map을 초과할 경우
+			t = temp[i + 1];
+			for (int j = i + 1; j <= i + x;j++) {
+				if (t != temp[j] || is_block[j])return false;
+				is_block[j] = true;
+			}
+			i += x;
+		}
+		else if (temp[i] < temp[i + 1]) { // 오른쪽이 더높음
+			if (i - (x - 1) < 0)return false; // map을 초과할 경우
+			t = temp[i];
+			for (int j = i; j >= i - (x - 1); j--) {
+				if (t != temp[j] || is_block[j])return false;
+				is_block[j] = true;
+			}
+			i++;
+		}
+	}
+
+	// 전부 검사했는데 통과이면 true 반환
+	return true;
+}
+void row(int idx) {
+	// temp에 행을 복사
+	temp.clear();
+	for (int i = 0; i < N; i++) temp.push_back(map[i][idx]);
+	if (check())res++;
+}
+void col(int idx) {
+	// temp에 열을 복사
+	temp.clear();
+	for (int i = 0; i < N; i++) temp.push_back(map[idx][i]);
+	if (check())res++;
+}
+
+void play() {
+	// N개의 행을 검사
+	for (int i = 0; i < N; i++) row(i);
+	// N개의 열을 검사
+	for (int i = 0; i < N; i++) col(i);
+}
+//void score() {
+//}
+int main() {
+	scanf("%d", &T);
+	for (int i = 1; i <= T; i++) {
+		init();
+		setting();
+		play();
+		//score();
+		printf("#%d %d\n", i,res);
+	}
+	return 0;
+}
