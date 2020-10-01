@@ -1,0 +1,86 @@
+#include <iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+int T, N, M, K, res;
+vector<vector<int>> map(N, vector<int>(N, 0));
+
+void init() {
+	N = K = res = 0;
+	map.clear();
+}
+void setting() {
+	scanf("%d%d", &N, &M);
+	int temp = 0;
+	for (int i = 0; i < N; i++) {
+		map.push_back(vector<int>());
+		for (int j = 0; j < N; j++) {
+			scanf("%d", &temp);
+			map[i].push_back(temp);
+		}
+	}
+	// 최대 방범 범위(가로 길이)
+	if (N % 2 == 0)K = N + 1;
+	else K = N;
+}
+void play() {
+	int home = 0;
+	int price = 0;
+	// 방범 범위 크기 1부터 K 까지
+	for (int i = 1; i <= K; i++) {
+		price = i * i + (i - 1) * (i - 1);
+		// 실행
+		for (int y = 0; y < N; y++) {
+			for (int x = 0; x < N; x++) {
+				home = 0;
+				// map[y][x] 을 기준으로 덮을 수 있는 집의 수 계산
+				// 위로 올라감
+				for (int c = 0; c < i; c++) {
+					if (y - c < 0)break;
+					// 왼쪽으로 감
+					for (int r = 0; r < i - c; r++) {
+						if (x - r < 0)break;
+						if (map[y - c][x - r] == 1)home++;
+					}
+					// 오른쪽으로 감
+					for (int r = 1; r < i - c; r++) {
+						if (x + r >= N)break;
+						if (map[y - c][x + r] == 1)home++;
+					}
+				}
+				// 아래로 내려감
+				for (int c = 1; c < i; c++) {
+					if (y + c >= N)break;
+					// 왼쪽으로 감
+					for (int r = 0; r < i - c; r++) {
+						if (x - r < 0)break;
+						if (map[y + c][x - r] == 1)home++;
+					}
+					// 오른쪽으로 감
+					for (int r = 1; r < i - c; r++) {
+						if (x + r >= N)break;
+						if (map[y + c][x + r] == 1)home++;
+					}
+				}
+				//printf("home : %d\n", home);
+				// 손해보지 않으며 최고 집 수 라면 업데이트
+				if (home * M >= price && home > res) res = home;
+			}
+		}
+	}
+}
+void score() {
+}
+
+int main() {
+	scanf("%d", &T);
+	for (int i = 1; i <= T; i++) {
+		init();
+		setting();
+		play();
+		//score();
+		printf("#%d %d\n", i,res);
+	}
+	return 0;
+}
