@@ -1,0 +1,142 @@
+#include <iostream>
+#include<deque>
+#include<string>
+#include<vector>
+#include<algorithm>
+#include<queue>
+//#include<map>
+#include<set>
+#define INF 987654321
+using namespace std;
+
+int T, N, M, C, res;
+int max_A = 0; int max_B = 0;
+vector<int> v_A, v_B, temp_A, temp_B;
+vector<vector<int>> map;
+
+void init() {
+	N = M = C = res = 0;
+	v_A.clear();
+	v_B.clear();
+	map.clear();
+}
+void setting() {
+	// 채취 관련 입력 정보
+	scanf("%d%d%d", &N, &M, &C);
+	// 벌통 map
+	int temp = 0;
+	for (int i = 0; i < N; i++) {
+		map.push_back(vector<int>());
+		for (int j = 0; j < N; j++) {
+			scanf("%d", &temp);
+			map[i].push_back(temp);
+		}
+	}
+}
+
+void score() {
+}
+void backT_A(int idx, int depth,int max_depth) {
+	if (depth + 1 == max_depth) {
+		// 최대 깊이까지 왔다면
+		int temp = 0;
+		for (int i = 0; i < temp_A.size(); i++) { temp += temp_A[i]; }
+		if (temp > C)return; // 1회 최대 채집량을 넘으면 리턴
+		temp = 0;
+		for (int i = 0; i < temp_A.size(); i++) {temp += temp_A[i] * temp_A[i];}
+		max_A = max(max_A, temp);
+		return;
+	}
+	for (int i = idx + 1; i < v_A.size(); i++) {
+		temp_A.push_back(v_A[i]);
+		backT_A(i, depth + 1, max_depth);
+		temp_A.pop_back();
+	}
+}
+void backT_B(int idx, int depth, int max_depth) {
+	if (depth + 1 == max_depth) {
+		// 최대 깊이까지 왔다면
+		int temp = 0;
+		for (int i = 0; i < temp_B.size(); i++) { temp += temp_B[i]; }
+		if (temp > C)return; // 1회 최대 채집량을 넘으면 리턴
+		temp = 0;
+		for (int i = 0; i < temp_B.size(); i++) { temp += temp_B[i] * temp_B[i]; }
+		max_B = max(max_B, temp);
+		return;
+	}
+	for (int i = idx + 1; i < v_B.size(); i++) {
+		temp_B.push_back(v_B[i]);
+		backT_B(i, depth + 1, max_depth);
+		temp_B.pop_back();
+	}
+}
+void get_max_A() {
+	max_A = 0;
+	// A를 1개 부터 M개 까지 선택해 봄
+	for (int i = 1; i <= M; i++) {
+		temp_A.clear();
+		for (int j = 0; j < v_A.size(); j++) {
+			temp_A.push_back(v_A[j]);
+			backT_A(j, 0, i);
+			temp_A.pop_back();
+		}
+	}
+}
+void get_max_B() {
+	max_B = 0;
+	// B를 1개 부터 M개 까지 선택해 봄
+	for (int i = 1; i <= M; i++) {
+		temp_B.clear();
+		for (int j = 0; j < v_B.size(); j++) {
+			temp_B.push_back(v_B[j]);
+			backT_B(j, 0, i);
+			temp_B.pop_back();
+		}
+	}
+}
+
+void play() {
+	int t = 0;
+	// 벌통 Brute Force
+	// 인부 A가 채취
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			v_A.clear();
+			for (int k = 0; k < M; k++) {
+				if (j + k >= N)break;
+				v_A.push_back(map[i][j + k]);
+			}
+			if (v_A.size() < M)continue;
+			get_max_A();
+			// 인부 B가 채취
+			for (int y = i; y < N; y++) {
+				// A와 같은 행에서 채취한다면 j+M 위치에서 시작해야 함 
+				if (y == i) { t = j + M; }
+				else t = 0;
+				for (int x = t; x < N; x++) {
+					v_B.clear();
+					for (int k = 0; k < M; k++) {
+						if (x + k >= N)break;
+						v_B.push_back(map[y][x + k]);
+					}
+					if (v_B.size() < M)continue;
+					else {
+						get_max_B();
+						res = max(res, max_A + max_B);
+					}
+				}
+			}
+		}
+	}
+}
+int main() {
+	scanf("%d", &T);
+	int temp = 0;
+	for (int i = 1; i <= T; i++) {
+		init();
+		setting();
+		play();
+		printf("#%d %d\n", i, res);
+	}
+	return 0;
+}
